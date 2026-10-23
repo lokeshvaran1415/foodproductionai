@@ -48,10 +48,9 @@ app.get('*', (req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-// Only start listening when run directly (not when required as a Vercel serverless function)
-if (process.env.NODE_ENV !== 'production' || require.main === module) {
+if (require.main === module || process.env.PORT) {
   app.listen(PORT, () => {
-    console.log(`🚀 FoodProd AI unified server running on http://localhost:${PORT}`);
+    console.log(`🚀 FoodProd AI server running on port ${PORT}`);
   });
 }
 
