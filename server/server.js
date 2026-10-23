@@ -16,22 +16,25 @@ global.DB_CONNECTED = false;
 // Connect to MongoDB
 connectDB();
 
-// API Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/dashboard', require('./routes/dashboard'));
-app.use('/api/forecast', require('./routes/forecast'));
-app.use('/api/production', require('./routes/production'));
-app.use('/api/inventory', require('./routes/inventory'));
-app.use('/api/alerts', require('./routes/alerts'));
-app.use('/api/analytics', require('./routes/analytics'));
-app.use('/api/products', require('./routes/products'));
+// API Routes (mounted under both /api and root to handle any proxy rewrite behavior)
+const registerRoutes = (prefix = '') => {
+  app.use(`${prefix}/auth`, require('./routes/auth'));
+  app.use(`${prefix}/dashboard`, require('./routes/dashboard'));
+  app.use(`${prefix}/forecast`, require('./routes/forecast'));
+  app.use(`${prefix}/production`, require('./routes/production'));
+  app.use(`${prefix}/inventory`, require('./routes/inventory'));
+  app.use(`${prefix}/alerts`, require('./routes/alerts'));
+  app.use(`${prefix}/analytics`, require('./routes/analytics'));
+  app.use(`${prefix}/products`, require('./routes/products'));
+  app.get(`${prefix}/health`, (req, res) => res.json({
+    status: 'ok',
+    db: global.DB_CONNECTED ? 'mongodb' : 'demo_mode',
+    time: new Date().toISOString()
+  }));
+};
 
-// Health check
-app.get('/api/health', (req, res) => res.json({
-  status: 'ok',
-  db: global.DB_CONNECTED ? 'mongodb' : 'demo_mode',
-  time: new Date().toISOString()
-}));
+registerRoutes('/api');
+registerRoutes('');
 
 // Serve static frontend in production (for unified local hosting or container deploy)
 const distPath = path.join(__dirname, '../client/dist');
